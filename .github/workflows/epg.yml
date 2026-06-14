@@ -1,0 +1,84 @@
+name: 🤖 EPG Robot — обновление расписания
+
+on:
+  schedule:
+    # Каждые 3 часа
+    - cron: '0 */3 * * *'
+  # Ручной запуск
+  workflow_dispatch:
+  # При пуше в main
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/**'
+      - '.github/workflows/**'
+
+permissions:
+  contents: write
+
+jobs:
+  update-schedule:
+    name: 📺 Обновить EPG расписание
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: 📦 Install deps
+        run: |
+          pip install aiohttp
+
+      - name: 📁 Create data dir
+        run: mkdir -p data
+
+      - name: 🤖 Запуск поискового робота EPG
+        run: |
+          python scripts/epg_robot.py
+        timeout-minutes: 15
+        env:
+          PYTHONUNBUFFERED: '1'
+
+      - name: 📊 Статистика
+        run: |
+          if [ -f data/schedule.json ]; then
+            echo "✅ schedule.json: $(wc -c < data/schedule.json) байт"
+            python3 -c "
+          import json
+          d = json.load(open('data/schedule.json'))
+          total = sum(len(v) for v in d['schedule'].values())
+          print(f'📺 Каналов: {len(d[\"channels\"])}')
+          print(f'📋 Передач: {total}')
+          print(f'🕐 Обновлено: {d[\"updated\"]}')
+            "
+          fi
+          if [ -f data/epg.xml ]; then
+            echo "📡 epg.xml: $(wc -c < data/epg.xml) байт"
+          fi
+
+      - name: 🏗️ Build static site
+        run: |
+          python scripts/build.py
+
+      - name: 🚀 Commit & Push
+        run: |
+          git config user.name  "EPG Robot 🤖"
+          git config user.email "epg-robot@oinktech.ltd"
+          git add -A
+          if git diff --staged --quiet; then
+            echo "Нет изменений"
+          else
+            NOW=$(date -u "+%Y-%m-%d %H:%M UTC")
+            git commit -m "🤖 EPG обновление [${NOW}]"
+            git push
+            echo "✅ Запушено!"
+          fi

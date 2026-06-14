@@ -1,0 +1,73 @@
+name: 🤖 EPG Robot — Обновление расписания
+
+on:
+  schedule:
+    # Каждые 3 часа
+    - cron: '0 */3 * * *'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Принудительное обновление'
+        required: false
+        default: 'false'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/**'
+      - '.github/workflows/**'
+
+jobs:
+  update-epg:
+    name: 📡 Поисковой робот EPG
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: 📥 Клонируем репозиторий
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: 🟢 Настраиваем Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📦 Устанавливаем зависимости
+        run: npm ci
+
+      - name: 🔍 Запускаем поискового робота EPG
+        run: node scripts/epg-robot.js
+        env:
+          NODE_OPTIONS: '--max-old-space-size=512'
+          TZ: 'Europe/Moscow'
+
+      - name: 📺 Парсим M3U плейлист
+        run: node scripts/parse-playlist.js
+
+      - name: 🔨 Строим данные расписания
+        run: node scripts/build-schedule.js
+
+      - name: 🌐 Генерируем страницу
+        run: node scripts/build-site.js
+
+      - name: 📊 Статистика обновления
+        run: |
+          echo "📅 Время: $(TZ=Europe/Moscow date)"
+          echo "📁 Файлы данных:"
+          ls -lh data/ 2>/dev/null || echo "нет файлов"
+          echo "📺 Каналов:"
+          node -e "try{const d=require('./data/channels.json');console.log(d.length+' каналов')}catch(e){console.log('нет данных')}"
+
+      - name: 💾 Коммитим обновление
+        run: |
+          git config user.name "EPG Robot 🤖"
+          git config user.email "epg-robot@live-programm.local"
+          git add data/ index.html
+          git diff --staged --quiet && echo "Изменений нет" && exit 0
+          TIMESTAMP=$(TZ=Europe/Moscow date '+%d.%m.%Y %H:%M МСК')
+          CHANNELS=$(node -e "try{const d=require('./data/channels.json');console.log(d.length)}catch(e){console.log('?')}")
+          git commit -m "🤖 EPG обновление: ${TIMESTAMP} | ${CHANNELS} каналов"
+          git push
