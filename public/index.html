@@ -94,7 +94,7 @@
 <script>
     async function loadChannels() {
         try {
-            const response = await fetch('../data/schedule.json');
+            const response = await fetch('data/schedule.json');
             const channels = await response.json();
 
             const feed = document.getElementById('feed');

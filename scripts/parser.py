@@ -84,8 +84,8 @@ def main():
             "progress": progress
         })
 
-    os.makedirs('live-programm/data', exist_ok=True)
-    with open('live-programm/data/schedule.json', 'w', encoding='utf-8') as f:
+    os.makedirs('data', exist_ok=True)
+    with open('data/schedule.json', 'w', encoding='utf-8') as f:
         json.dump(final_data, f, ensure_ascii=False, indent=4)
     print("✅ Данные обновлены без имитаций.")
 
