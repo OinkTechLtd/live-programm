@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Live Programm - TikTok TV</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            color: #fff;
+            font-family: sans-serif;
+            overflow: hidden;
+        }
+        .container {
+            width: 100%;
+            height: 100%;
+            scroll-snap-type: y mandatory;
+            overflow-y: scroll;
+            scrollbar-width: none;
+        }
+        .container::-webkit-scrollbar {
+            display: none;
+        }
+        .channel-section {
+            width: 100%;
+            height: 100vh;
+            scroll-snap-align: start;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .player-container {
+            width: 100%;
+            height: 100%;
+            background: #111;
+        }
+        .info-overlay {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            z-index: 10;
+            pointer-events: none;
+        }
+        .channel-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+        .program-title {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+        }
+        .progress-container {
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background: #ff0050; /* TikTok Red */
+            width: 45%; /* Пример прогресса */
+        }
+        .live-badge {
+            display: inline-block;
+            background: #ff0050;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="feed">
+    <!-- Каналы будут загружаться сюда динамически -->
+</div>
+
+<!-- Подключаем плеер (один из указанных тобой) -->
+<script src="https://cdn.jsdelivr.net/gh/oinktechltd/cdnplayerjs/dist/cdnplayer.min.js"></script>
+
+<script>
+    async function loadChannels() {
+        try {
+            const response = await fetch('../data/schedule.json');
+            const channels = await response.json();
+
+            const feed = document.getElementById('feed');
+            feed.innerHTML = ''; // Очищаем
+            
+            channels.forEach((ch, index) => {
+                const section = document.createElement('div');
+                section.className = 'channel-section';
+                section.innerHTML = `
+                    <div class="player-container" id="player-${index}"></div>
+                    <div class="info-overlay">
+                        <div class="live-badge">В эфире</div>
+                        <div class="channel-name">@${ch.name}</div>
+                        <div class="program-title">${ch.program}</div>
+                        <div class="progress-container">
+                            <div class="progress-bar" style="width: ${ch.progress}%"></div>
+                        </div>
+                    </div>
+                `;
+                feed.appendChild(section);
+                
+                // Инициализация плеера для каждого канала
+                // Используем cdnplayerjs (предполагаемый синтаксис)
+                if (window.CDNPlayer) {
+                    new CDNPlayer({
+                        container: `#player-${index}`,
+                        file: ch.url,
+                        autoplay: index === 0, // Автоплей только для первого
+                        muted: true
+                    });
+                }
+            });
+        } catch (e) {
+            console.error("Ошибка загрузки:", e);
+        }
+    }
+
+    window.onload = loadChannels;
+</script>
+</body>
+</html>
