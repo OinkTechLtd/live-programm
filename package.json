@@ -1,17 +1,14 @@
 {
   "name": "live-programm",
   "version": "1.0.0",
-  "description": "Телепрограмма с поисковым роботом — расписание каналов + прямые эфиры",
-  "type": "commonjs",
+  "description": "TV расписание + прямой эфир — LiveПрограмма by OinkTech",
   "scripts": {
-    "build": "pip3 install -r requirements.txt && python3 scripts/epg_robot.py && python3 scripts/build.py",
-    "robot": "python3 scripts/epg_robot.py",
-    "site": "python3 scripts/build.py"
+    "build": "node scripts/copy-static.js",
+    "start": "node scripts/serve.js"
   },
-  "dependencies": {
-    "axios": "^1.6.2"
+  "engines": {
+    "node": ">=18.0.0"
   },
-  "engines": { "node": ">=18.0.0" },
   "author": "OinkTech Ltd | FUN RUSSIA CRMP",
   "license": "MIT"
 }

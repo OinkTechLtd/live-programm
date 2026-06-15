@@ -1,101 +1,73 @@
 # 📺 LiveПрограмма
 
-> **Поисковой робот TV-расписания + веб-гид в стиле TikTok**  
-> Робот сам ищет расписание каналов в интернете каждые 3 часа. Видишь что идёт сейчас — жмёшь play.
+> Поисковой робот TV-расписания + веб-гид в стиле TikTok  
+> OinkTech Ltd | FUN RUSSIA CRMP
 
-![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-каждые_3ч-blue?logo=github-actions)
-![Python](https://img.shields.io/badge/Python-3.11-brightgreen?logo=python)
+![Actions](https://img.shields.io/badge/GitHub_Actions-каждые_3ч-blue?logo=github-actions)
+![Python](https://img.shields.io/badge/Python-3.12-brightgreen?logo=python)
+![Node](https://img.shields.io/badge/Node.js-18%2B-green?logo=node.js)
 ![License](https://img.shields.io/badge/License-MIT-green)
-![Made by](https://img.shields.io/badge/OinkTech_Ltd-FUN_RUSSIA_CRMP-red)
 
 ---
 
-## 🔥 Что это
+## 🚀 Деплой
 
-**live-programm** — это автономный проект в стиле TikTok для просмотра TV-программы российских каналов:
+### Vercel (рекомендуется — бесплатно)
 
-- **Поисковой робот** (`scripts/epg_robot.py`) ищет расписание по интернету без баз данных — парсит tv.mail.ru, programma.tv, vsetv.com, официальные API каналов
-- **Авто-обновление** через GitHub Actions каждые 3 часа — никакого ручного труда
-- **TikTok-интерфейс** — листаешь каналы вертикально, видишь что идёт СЕЙЧАС с прогресс-баром
-- **Встроенный плеер** — PlayerJS из [OinkTechLtd/rulive](https://github.com/OinkTechLtd/rulive) + fallback на hls.js
-- **Плейлисты** из [OinkTechLLC/livem3u](https://github.com/OinkTechLLC/livem3u) и [OinkTechLtd/rulive](https://github.com/OinkTechLtd/rulive)
+1. Форкни репо
+2. Зайди на [vercel.com](https://vercel.com) → **New Project** → импортируй репо
+3. Vercel сам увидит `vercel.json` — нажми **Deploy**
+4. Готово ✅
 
----
-
-## 📱 Интерфейс
-
-```
-┌────────────────────────────┐
-│ 🔴 LiveПрограмма       🔍 │  ← Поиск по программе
-├────────────────────────────┤
-│ [Все][Первый][Россия][НТВ]│  ← Вкладки каналов
-├────────────────────────────┤
-│                            │
-│  ▶  [кнопка плеера]       │  ← Тап → смотреть в эфире
-│                            │
-│  🔴 В ЭФИРЕ               │
-│  Первый канал              │
-│  Вечерние новости          │
-│  21:00 — 22:00 · 60 мин   │
-│  ████████████░░░░ 75%      │  ← Прогресс передачи
-│                            │
-│  Далее:                    │
-│  22:00  Ночные новости     │
-│  23:00  Фильм              │
-│                            │
-├────────────────────────────┤
-│ 📺 Эфир  📋 Каналы  🔍   │  ← Нав-бар TikTok стиль
-└────────────────────────────┘
-     ↕ Листаешь вверх/вниз
-```
+> Build command: `node scripts/copy-static.js`  
+> Output directory: `public`
 
 ---
 
-## 🚀 Деплой на GitHub Pages
+### GitHub Pages (бесплатно)
 
-### 1. Форкни репо
-
-```bash
-git clone https://github.com/YOUR_NAME/live-programm.git
-cd live-programm
-```
-
-### 2. Включи GitHub Pages
-
-`Settings → Pages → Source → Deploy from branch → main / docs`
-
-### 3. Запусти робота вручную первый раз
-
-`Actions → 🤖 EPG Robot → Run workflow`
-
-### 4. Готово ✅
-
-Сайт будет доступен по адресу:
-```
-https://YOUR_NAME.github.io/live-programm/
-```
+1. `Settings → Pages → Deploy from branch → main / docs`
+2. Запусти Actions вручную: `Actions → 🤖 EPG Robot → Run workflow`
+3. Сайт: `https://ИМЯ.github.io/live-programm/`
 
 ---
 
-## 🤖 Как работает поисковой робот
+### Onrender (бесплатно)
+
+1. [render.com](https://render.com) → **New Web Service** → подключи репо
+2. **Build:** `node scripts/copy-static.js`
+3. **Start:** `node scripts/serve.js`
+4. Готово ✅ (файл `render.yaml` уже настроен)
+
+---
+
+### Tatnet / Heroku-style
+
+Используется `Procfile`:
+```
+web: node scripts/serve.js
+```
+Build перед стартом: `node scripts/copy-static.js`
+
+---
+
+## 🤖 Как работает робот
 
 ```
-epg_robot.py
+GitHub Actions (каждые 3 часа)
     │
-    ├─ Для каждого канала параллельно:
-    │   ├─ tv.mail.ru JSON API
-    │   ├─ programma.tv (парсинг HTML)
-    │   ├─ vsetv.com (парсинг HTML)
-    │   ├─ 1tv.ru API (для Первого)
-    │   ├─ ctc.ru API (для СТС)
-    │   └─ Fallback: epg.best / epg.ottplay
+    ├─ python scripts/epg_robot.py
+    │   ├─ Шаг 1: публичные XMLTV (epg.one, epg.ottplay...)
+    │   ├─ Шаг 2: API (tv.mail.ru, epg.best...)
+    │   ├─ Шаг 3: авто-обнаружение новых каналов
+    │   └─ Шаг 4: плейлисты OinkTech → stream_url
     │
-    ├─ Сохраняет data/schedule.json
-    ├─ Генерирует data/epg.xml (XMLTV)
-    └─ build.py → docs/index.html (с данными)
+    ├─ python scripts/build.py
+    │   ├─ → docs/   (GitHub Pages)
+    │   └─ → public/ (Vercel / Tatnet / Onrender)
+    │
+    └─ git commit & push
 ```
-
-**Без баз данных.** Каждые 3 часа робот сам находит актуальное расписание по открытым источникам.
 
 ---
 
@@ -103,90 +75,55 @@ epg_robot.py
 
 ```
 live-programm/
-├── .github/
-│   └── workflows/
-│       └── epg.yml          # Actions: каждые 3 часа
+├── .github/workflows/epg.yml   # Actions: каждые 3 часа
 ├── scripts/
-│   ├── epg_robot.py         # 🤖 Поисковой робот EPG
-│   └── build.py             # Генератор статики
+│   ├── epg_robot.py            # 🤖 Python-робот
+│   ├── build.py                # Сборка docs/ и public/
+│   ├── copy-static.js          # Node.js build (Vercel)
+│   └── serve.js                # Статический сервер (Onrender)
 ├── data/
-│   ├── schedule.json        # Расписание (генерируется)
-│   └── epg.xml              # XMLTV формат (генерируется)
-├── docs/                    # GitHub Pages (генерируется)
-├── index.html               # TikTok-гид (главная страница)
-├── player.html              # Встроенный плеер
-├── requirements.txt
-└── README.md
+│   ├── schedule.json           # EPG данные (авто)
+│   └── epg.xml                 # XMLTV формат (авто)
+├── public/                     # ← деплоится на Vercel/Tatnet
+├── docs/                       # ← деплоится на GitHub Pages
+├── index.html                  # TikTok-гид
+├── embed.html                  # Виджет для вставки
+├── player.html                 # Плеер
+├── vercel.json                 # Vercel конфиг
+├── render.yaml                 # Onrender конфиг
+├── Procfile                    # Tatnet / Heroku
+└── requirements.txt            # Python зависимости
 ```
 
 ---
 
-## 📡 Плейлисты
+## 🔗 Embed-виджет
 
-Используются плейлисты из репозиториев OinkTech:
+Вставь канал с расписанием на любой сайт:
 
-| Плейлист | Ссылка |
-|---|---|
-| **Основной** | `https://raw.githubusercontent.com/OinkTechLLC/livem3u/main/zabava-full.m3u` |
-| **Smotrim** | `https://raw.githubusercontent.com/OinkTechLLC/livem3u/main/smotrim.m3u` |
-| **Резервный** | `https://raw.githubusercontent.com/OinkTechLtd/rulive/main/russ.m3u` |
-
----
-
-## 📺 Поддерживаемые каналы
-
-| Канал | Группа |
-|---|---|
-| Первый канал, Россия 1, НТВ, ОТР, ТВ Центр | Федеральные |
-| Пятый канал, РЕН ТВ, СТС, ТНТ, ТВ-3, Суббота! | Федеральные |
-| Россия 24, Дождь | Новости |
-| Матч! ТВ | Спорт |
-| МУЗ-ТВ | Музыка |
-| Карусель | Детские |
-| Наука | Познание |
-| Дом Кино | Кино |
-| Звезда | Федеральные |
-
----
-
-## ⚙️ Локальный запуск робота
-
-```bash
-pip install aiohttp
-python scripts/epg_robot.py
+```html
+<iframe
+  src="https://ВАШ_САЙТ/embed.html?ch=perviy&app=https://ВАШ_САЙТ/"
+  width="320" height="480"
+  frameborder="0"
+  allowfullscreen
+  allow="autoplay; fullscreen"
+  style="border-radius:12px"
+></iframe>
 ```
 
-Сохраняет `data/schedule.json` и `data/epg.xml`.
+В виджете автоматически появляется реклама **«Смотрите все каналы в LiveПрограмма»**.
 
 ---
 
-## 🛠️ GitHub Actions
+## 📡 EPG для IPTV плееров
 
-Воркфлоу `.github/workflows/epg.yml` запускается:
-- **Каждые 3 часа** автоматически
-- **При пуше** в `main` (если изменились скрипты)
-- **Вручную** через `workflow_dispatch`
-
-Каждый запуск:
-1. Запускает `epg_robot.py`
-2. Запускает `build.py`
-3. Коммитит обновлённые файлы в репо
-
----
-
-## 🌐 Как подключить как EPG к IPTV плееру
-
-XMLTV файл доступен по адресу:
 ```
-https://YOUR_NAME.github.io/live-programm/data/epg.xml
+https://ВАШ_САЙТ/data/epg.xml
 ```
 
-Вставляй в TiviMate, OttPlayer, IPTV Smarters и т.д.
+Подключай в TiviMate, OttPlayer, IPTV Smarters.
 
 ---
 
-## 👤 Автор
-
-**OinkTech Ltd** · FUN RUSSIA CRMP
-
-*⭐ Звезда если зашло!*
+## 👤 OinkTech Ltd · FUN RUSSIA CRMP

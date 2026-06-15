@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: live-programm
+    env: node
+    buildCommand: node scripts/copy-static.js
+    startCommand: node scripts/serve.js
+    envVars:
+      - key: PORT
+        value: 3000
+    autoDeploy: true

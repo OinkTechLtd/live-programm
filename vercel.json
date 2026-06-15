@@ -1,5 +1,35 @@
 {
   "version": 2,
-  "public": true,
-  "cleanUrls": true
+  "buildCommand": "node scripts/copy-static.js",
+  "outputDirectory": "public",
+  "installCommand": "echo 'no deps'",
+  "framework": null,
+  "rewrites": [
+    { "source": "/data/(.*)", "destination": "/data/$1" },
+    { "source": "/embed",     "destination": "/embed.html" },
+    { "source": "/player",    "destination": "/player.html" },
+    { "source": "/(.*)",      "destination": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/data/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Cache-Control", "value": "public, max-age=10800" }
+      ]
+    },
+    {
+      "source": "/embed.html",
+      "headers": [
+        { "key": "X-Frame-Options", "value": "ALLOWALL" },
+        { "key": "Content-Security-Policy", "value": "frame-ancestors *" }
+      ]
+    },
+    {
+      "source": "/(.*).html",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=300" }
+      ]
+    }
+  ]
 }
