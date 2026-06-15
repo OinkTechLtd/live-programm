@@ -29,29 +29,19 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: 🟢 Настраиваем Node.js
-        uses: actions/setup-node@v4
+      - name: 🐍 Настраиваем Python
+        uses: actions/setup-python@v5
         with:
-          node-version: '20'
-          cache: 'npm'
+          python-version: '3.10'
+          cache: 'pip'
 
       - name: 📦 Устанавливаем зависимости
-        run: npm ci
+        run: pip install -r requirements.txt
 
       - name: 🔍 Запускаем поискового робота EPG
-        run: node scripts/epg-robot.js
+        run: python scripts/epg_robot.py
         env:
-          NODE_OPTIONS: '--max-old-space-size=512'
           TZ: 'Europe/Moscow'
-
-      - name: 📺 Парсим M3U плейлист
-        run: node scripts/parse-playlist.js
-
-      - name: 🔨 Строим данные расписания
-        run: node scripts/build-schedule.js
-
-      - name: 🌐 Генерируем страницу
-        run: node scripts/build-site.js
 
       - name: 📊 Статистика обновления
         run: |
@@ -59,15 +49,15 @@ jobs:
           echo "📁 Файлы данных:"
           ls -lh data/ 2>/dev/null || echo "нет файлов"
           echo "📺 Каналов:"
-          node -e "try{const d=require('./data/channels.json');console.log(d.length+' каналов')}catch(e){console.log('нет данных')}"
+          python -c "import json; d=json.load(open('data/schedule.json', encoding='utf-8')); print(len(d['channels']), 'каналов')"
 
       - name: 💾 Коммитим обновление
         run: |
           git config user.name "EPG Robot 🤖"
           git config user.email "epg-robot@live-programm.local"
-          git add data/ index.html
+          git add data/
           git diff --staged --quiet && echo "Изменений нет" && exit 0
           TIMESTAMP=$(TZ=Europe/Moscow date '+%d.%m.%Y %H:%M МСК')
-          CHANNELS=$(node -e "try{const d=require('./data/channels.json');console.log(d.length)}catch(e){console.log('?')}")
+          CHANNELS=$(python -c "import json; d=json.load(open('data/schedule.json', encoding='utf-8')); print(len(d['channels']))")
           git commit -m "🤖 EPG обновление: ${TIMESTAMP} | ${CHANNELS} каналов"
           git push
