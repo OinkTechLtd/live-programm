@@ -155,7 +155,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
 // Параметры из URL
 const P = new URLSearchParams(location.search);
 const chId      = P.get("ch")    || "";
-const appUrl    = P.get("app")   || "https://YOUR_NAME.github.io/live-programm/";
+const appUrl    = P.get("app")   || "https://htmlpreview.github.io/?https://github.com/OinkTechLtd/live-programm/blob/main/index.html";
 const dataUrl   = P.get("data")  || (appUrl.replace(/\/?$/, "/") + "data/schedule.json");
 const embedMode = P.get("mode")  || "full";  // full | compact
 
